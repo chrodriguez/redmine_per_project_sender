@@ -4,7 +4,8 @@ module RedminePerProjectSender
       base.send(:include, InstanceMethods)
 
       base.class_eval do
-        alias_method_chain :mail,  :project_sender
+        alias_method :mail_without_project_sender, :mail
+        alias_method :mail, :mail_with_project_sender
       end
       
     end
@@ -19,7 +20,7 @@ module RedminePerProjectSender
           'X-Auto-Response-Suppress' => 'All',
           'Auto-Submitted' => 'auto-generated',
           'From' => mail_from_project_sender,
-          'List-Id' => "<#{Setting.mail_from.to_s.gsub('@', '.')}>"
+          'List-Id' => "<#{Setting.mail_from.to_s.tr('@', '.')}>"
 
         # Replaces users with their email addresses
         [:to, :cc, :bcc].each do |key|
@@ -55,17 +56,14 @@ module RedminePerProjectSender
           headers[:references] = @references_objects.collect {|o| "<#{self.class.references_for(o)}>"}.join(' ')
         end
 
-        m = if block_given?
-              super headers, &block
-            else
-              super headers do |format|
-                format.text
-                format.html unless Setting.plain_text_mail?
-              end
-            end
-        set_language_if_valid @initial_language
-
-        m
+        if block_given?
+          super headers, &block
+        else
+          super headers do |format|
+            format.text
+            format.html unless Setting.plain_text_mail?
+          end
+        end
       end
 
       private
