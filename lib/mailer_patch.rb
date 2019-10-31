@@ -20,7 +20,7 @@ module RedminePerProjectSender
           'X-Auto-Response-Suppress' => 'All',
           'Auto-Submitted' => 'auto-generated',
           'From' => mail_from_project_sender,
-          'List-Id' => "<#{Setting.mail_from.to_s.tr('@', '.')}>"
+          'List-Id' => "<#{mail_from_project_sender.to_s.tr('@', '.')}>"
 
         # Replaces users with their email addresses
         [:to, :cc, :bcc].each do |key|
